@@ -1,0 +1,4 @@
+content
+src/input/audio_segments
+src/input/mfccs_segments
+src/input/specs_segments
