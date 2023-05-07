@@ -1,6 +1,11 @@
 MUSIC GENRE CLASSIFICATION
 --------------------------------------------
 
+Please install FFMPEG:
+
+$ conda install -c conda-forge ffmpeg
+
+=================================================================
 This Project is organized into 3 main folders:
 
 
