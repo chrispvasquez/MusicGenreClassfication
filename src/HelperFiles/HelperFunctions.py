@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 import numpy as np
 import keras
+import gc
+import keras.backend as K
 from keras.utils import load_img, img_to_array
 import joblib
 from random import randint
@@ -19,13 +21,7 @@ import shutil
 from shazamio import Shazam
 from multiprocessing import Process
 from PyQt5.QtGui import QPixmap
-from  PyQt5.QtWidgets import (QApplication, QLabel, QWidget, 
-                             QPushButton, QVBoxLayout, QHBoxLayout, 
-                             QComboBox, QStackedLayout, QLineEdit,
-                             QFormLayout, QGridLayout, QTableWidget,
-                             QTableWidgetItem, QMessageBox, QFileDialog,
-                             QMainWindow
-                             )
+
 
 GENRES = 'Blues Classical Country Disco HipHop Jazz Metal Pop Reggae Rock'
 
@@ -40,13 +36,8 @@ def getSongInfo(audio_path):
     song_title = None
     song_artist = None
 
-    print(loop.run_until_complete(shazam(audio_path)))
-    print("EXIT")
-    exit()
     try:
         songInfo = loop.run_until_complete(shazam(audio_path))['track']
-        
-        print(songInfo)
         song_title = songInfo["title"]
         song_artist = songInfo ["subtitle"]
     
@@ -65,7 +56,7 @@ def getDataframe(csv_dir, buttonValue):
 def recordAudio(rec_dir):
 
     freq = 44100
-    duration = 30
+    duration = 10
     recording = sd.rec(int(duration * freq), samplerate=freq, channels=2)
     print('Recording')
     sd.wait()
@@ -88,14 +79,16 @@ def saveSongInfo(songTitle, songArtist, pred_label, pred_results, csv_dir):
 
     s1 = np.array([songTitle, songArtist])
     s2 = np.array(pred_results) * 100.0
-    songData = [np.append(np.concatenate((s1, s2)), str(datetime.datetime.now()))]
+    songData = [np.append(str(datetime.datetime.now()),
+                          np.concatenate((s1, s2))
+                          )]
     df = pd.DataFrame(data = songData, 
-                columns = ['Title', 'Artist', 
+                columns = ['Time Classified','Title', 'Artist', 
                             'Blues', 'Classical',
                             'Country', 'Disco',
                             'HipHop', 'Jazz',
                             'Metal', 'Pop',
-                            'Reggae', 'Rock', 'Time Classified'])
+                            'Reggae', 'Rock'])
 
     if not os.path.exists(csv_dir + pred_label + '.csv'):
         df.to_csv(csv_dir + pred_label + '.csv', index=False)
@@ -163,13 +156,21 @@ def modelPrediction(audio_file):
 
     audiosToGraph(audio_seg_dir, img_dir, inputType)
 
+    imageList = []
+
     for af in os.listdir(img_dir):
         image_data = load_img(os.path.join(img_dir, af[:-3] + 'png'),color_mode='rgba',target_size=(widthSize,heightSize))
         image = img_to_array(image_data)
         image = np.reshape(image,(1,widthSize,heightSize,4))
         
-        p = model.predict(image/255)
-        p = p.reshape((10,))
+        imageList.append(image)
+        
+        p = model(image).numpy()[0]
+        
+        # Less effcient VVVVVVVVVVV
+        # p = model.predict(image/255)
+        # p = model.predict(image)
+        # p = p.reshape((10,))
 
         predictions.append(p)
 
@@ -204,9 +205,11 @@ def modelPrediction(audio_file):
     avg_preds = [x / len(predictions) for x in np.array(predictions).sum(axis=0)]
     predicted_label = np.argmax(avg_preds)
     
-    # if os.path.exists(parentdir):
-    #     shutil.rmtree(parentdir)
-
+    if os.path.exists(parentdir):
+        shutil.rmtree(parentdir)
+    
+    K.clear_session()
+    gc.collect()
     return genres[predicted_label], avg_preds
 
 def audiosToGraph(audio_files_path, save_path, type="ms"):

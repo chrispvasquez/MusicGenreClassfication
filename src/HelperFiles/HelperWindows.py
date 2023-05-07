@@ -29,20 +29,42 @@ class DataWindow(QWidget):
 
         layout = QVBoxLayout()
         self.label = QLabel(self)
-        self.songTitle, self.songArtist = getSongInfo(audio)
+        songTitle, songArtist = getSongInfo(audio)
 
-        saveSongInfo(self.songTitle, self.songArtist, pred_label, results, csv_dir)
+        saveSongInfo(songTitle, songArtist, pred_label, results, csv_dir)
 
-        self.pixmap = getResultsImage(self.img_dir, results, self.songTitle, self.songArtist)
-        self.label.setPixmap(self.pixmap)
-        self.label.resize(self.pixmap.width(),
-                          self.pixmap.height())
+        pixmap = getResultsImage(self.img_dir, results, songTitle, songArtist)
+        self.label.setPixmap(pixmap)
+        self.label.resize(pixmap.width(),
+                          pixmap.height())
+ 
+        self.Q_songTitle = QLabel("Song Title: " + songTitle)
+        self.Q_songArtist = QLabel("Artist: " + songArtist)
+        self.Q_pred_label = QLabel("Predicted Genre: " + pred_label)
  
         layout.addWidget(self.label)
-        layout.addWidget(QLabel("Song Title: " + self.songTitle))
-        layout.addWidget(QLabel("Artist: " + self.songArtist))
-        layout.addWidget(QLabel("Predicted Genre: " + pred_label))
+        layout.addWidget(self.Q_songTitle)
+        layout.addWidget(self.Q_songArtist)
+        layout.addWidget(self.Q_pred_label)
         self.setLayout(layout)
+    
+    def update(self, pred_label, results, audio, csv_dir):
+        
+        songTitle, songArtist = getSongInfo(audio)
+        
+        saveSongInfo(songTitle, songArtist, pred_label, results, csv_dir)
+        
+        self.Q_songTitle.setText("Song Title: " + songTitle)
+        self.Q_songArtist.setText("Artist: " + songArtist)
+        self.Q_pred_label.setText("Predicted Genre: " + pred_label)
+        
+        pixmap = getResultsImage(self.img_dir, results, songTitle, songArtist)
+        self.label.setPixmap(pixmap)
+        self.label.resize(pixmap.width(),
+                          pixmap.height())
+        
+        
+        
 
 def createWarningWindow(descrtiption):
     # Create Warning Box for Unpopulated CSV

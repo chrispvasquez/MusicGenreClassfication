@@ -75,8 +75,8 @@ class Window(QWidget):
             hbox1.addWidget(b)
 
         hbox2 = QHBoxLayout()
-        self.inputFolderButton.clicked.connect(self.folderAudioPredict)
-        self.inputMicButton.clicked.connect(self.micAudioPredict)
+        self.inputFolderButton.clicked.connect(lambda: self.AudioPredict(case="file"))
+        self.inputMicButton.clicked.connect(lambda: self.AudioPredict(case="record"))
         hbox2.addWidget(self.inputFolderButton)
         hbox2.addWidget(self.inputMicButton)
 
@@ -128,27 +128,38 @@ class Window(QWidget):
             else:
                 self.warn_msg.exec_()
 
-    def folderAudioPredict(self):
+    def AudioPredict(self, case):
 
-        audio_file, _ = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
-                                                "", "All Files (*);;WAV Files (*.wav)")
+        audioPathToPass = None
+        pred_flag = True
+
+        if case == "file": 
+            
+            audio_file, _ = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
+                                                    "", "All Files (*);;WAV Files (*.wav)")
+            
+            if not audio_file.split('.')[-1] == "wav":
+                if not audio_file == "":
+                    createWarningWindow("Incorrect Audio Format! Must be WAV (\".wav\")!").exec_()
+                pred_flag = False
+            
+            audioPathToPass = audio_file
+
+        elif case == "record":
+            
+            rec_path = recordAudio(self.rec_dir)
+            
+            audioPathToPass = rec_path
+            
         
-        if audio_file.split('.')[-1] == "wav":
-            predict_label, label_scores = modelPrediction(audio_file)
+        if pred_flag:
+            predict_label, label_scores = modelPrediction(audioPathToPass)
+            
             if self.w2 is None:
-                self.w2 = DataWindow(predict_label, label_scores, audio_file, self.csv_dir)
-                self.w2.show()
-
-        elif not audio_file == "":
-            createWarningWindow("Incorrect Audio Format! Must be WAV (\".wav\")!").exec_()
-
-    def micAudioPredict(self):
-
-
-        rec_path = recordAudio(self.rec_dir)
-        predict_label, label_scores = modelPrediction(rec_path)
-        if self.w2 is None:
-            self.w2 = DataWindow(predict_label, label_scores, rec_path, self.csv_dir)
+                self.w2 = DataWindow(predict_label, label_scores, audioPathToPass, self.csv_dir)
+            else:
+                self.w2.update(predict_label, label_scores, audioPathToPass, self.csv_dir)
+                
             self.w2.show()
 
 
