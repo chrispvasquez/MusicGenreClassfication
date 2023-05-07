@@ -1,4 +1,7 @@
 datasets
-src/input/audio_segments
-src/input/mfccs_segments
-src/input/specs_segments
+Deprecated
+Deprecated/datasets_mod
+Images
+src/input/classifiedMusicData
+src/input/recordings
+src/input/graphs
