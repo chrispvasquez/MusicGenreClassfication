@@ -10,7 +10,7 @@ from  PyQt5.QtWidgets import (QApplication, QLabel, QWidget,
 
 #####################################
 import sys
-sys.path.insert(0, '../HelperFiles')
+sys.path.insert(0, 'HelperFiles')
 from HelperFunctions import *
 from HelperWindows import *
 #####################################
@@ -23,6 +23,8 @@ class Window(QWidget):
 
         # Set Recoridng Directory
         self.rec_dir = 'input/recordings/'
+        if not os.path.exists(self.rec_dir):
+            os.mkdir(self.rec_dir)
 
         # Set CSV data location & create if does not exist
         self.csv_dir = "input/classifiedMusicData/"
@@ -130,6 +132,7 @@ class Window(QWidget):
 
         audio_file, _ = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
                                                 "", "All Files (*);;WAV Files (*.wav)")
+        
         if audio_file.split('.')[-1] == "wav":
             predict_label, label_scores = modelPrediction(audio_file)
             if self.w2 is None:
@@ -140,6 +143,7 @@ class Window(QWidget):
             createWarningWindow("Incorrect Audio Format! Must be WAV (\".wav\")!").exec_()
 
     def micAudioPredict(self):
+
 
         rec_path = recordAudio(self.rec_dir)
         predict_label, label_scores = modelPrediction(rec_path)
