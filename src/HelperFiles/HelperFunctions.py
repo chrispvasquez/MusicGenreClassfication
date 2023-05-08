@@ -56,7 +56,7 @@ def getDataframe(csv_dir, buttonValue):
 def recordAudio(rec_dir):
 
     freq = 44100
-    duration = 10
+    duration = 30
     recording = sd.rec(int(duration * freq), samplerate=freq, channels=2)
     print('Recording')
     sd.wait()
@@ -115,7 +115,7 @@ def modelPrediction(audio_file):
     weightsToLoad = "saved_cnn18_3_BEST.hdf5"
     inputType = "ms"
     widthSize=128
-    heightSize= 130
+    heightSize= 130    
 
     parentdir = "temp"
     if os.path.exists(parentdir):
@@ -156,21 +156,21 @@ def modelPrediction(audio_file):
 
     audiosToGraph(audio_seg_dir, img_dir, inputType)
 
-    imageList = []
-
     for af in os.listdir(img_dir):
         image_data = load_img(os.path.join(img_dir, af[:-3] + 'png'),color_mode='rgba',target_size=(widthSize,heightSize))
         image = img_to_array(image_data)
         image = np.reshape(image,(1,widthSize,heightSize,4))
         
-        imageList.append(image)
         
-        p = model(image).numpy()[0]
+        # p = model(image).numpy()[0]
+        # p = model(image/225).numpy()[0]
+        # p = model.predict(image/255)
+        p = model.predict(image)
+        p = p.reshape((10,))
         
         # Less effcient VVVVVVVVVVV
-        # p = model.predict(image/255)
         # p = model.predict(image)
-        # p = p.reshape((10,))
+        
 
         predictions.append(p)
 
@@ -244,7 +244,7 @@ def audiosToGraph(audio_files_path, save_path, type="ms"):
             mels = librosa.feature.melspectrogram(y=y,sr=sr)
             fig = plt.Figure()
             canvas = FigureCanvas(fig)
-            plt.axis('off')
+            # plt.axis('off')
             p = plt.imshow(librosa.power_to_db(mels,ref=np.max))
 
         else:
