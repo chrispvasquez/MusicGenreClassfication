@@ -43,6 +43,7 @@ Descriptions:
 2) "src" contains the code that is used for the acctual application we developed.
     All necessary files to run the application are included within this project.
     To run the program, simply execute the script "music-genre-recognition-app".
+    Ensure you are within the "src" directory when executing. 
 
 3) "Tools" contains a notebook used for formatting the dataset as needed by
    all the notebooks in the "ModelNotebooks" directory. Its worth noting that
