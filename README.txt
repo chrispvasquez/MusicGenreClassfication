@@ -5,6 +5,7 @@ Please install FFMPEG:
 
 $ conda install -c conda-forge ffmpeg
 
+This package is essential for having music title and artist identification
 =================================================================
 This Project is organized into 3 main folders:
 
